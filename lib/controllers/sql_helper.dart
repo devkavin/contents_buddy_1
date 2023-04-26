@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
+/// Tutorial followed to implement SQL CRUD operations:
+/// https://www.youtube.com/watch?v=MQhjx1HS_pI
+
 class SQLHelper {
   static Future<void> createTables(sql.Database database) async {
     await database.execute("""CREATE TABLE contacts(
@@ -21,8 +24,7 @@ class SQLHelper {
       'contents_buddy.db',
       version: 1,
       onCreate: (sql.Database database, int version) async {
-        print(
-            "...Creating a table"); // Print statement to check if the table is created
+        // print("...Creating a table"); // Print statement to check if the table is created
         await createTables(database);
       },
     );
@@ -84,7 +86,7 @@ class SQLHelper {
 
   static String encodePhoto(String path) {
     final String base64Image = imageToBase64String(path);
-    print('Imaged Encoded');
+    // print('Imaged Encoded');
     return base64Image;
   }
 
@@ -93,7 +95,7 @@ class SQLHelper {
     final String base64Str = base64Image.replaceAll(regex, '');
     final Uint8List bytes = base64.decode(base64Str);
     final file = File(fileName)..writeAsBytesSync(bytes);
-    print('Image Decoded');
+    // print('Image Decoded');
     return file;
   }
 }
