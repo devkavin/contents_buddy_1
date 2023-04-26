@@ -4,8 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:email_validator/email_validator.dart';
-
 import '../controllers/sql_helper.dart';
 
 class ContactListPage extends StatefulWidget {
@@ -22,6 +20,7 @@ class _ContactListPageState extends State<ContactListPage> {
   // image picker
 
   // Boolean to load the data
+  // ignore: unused_field
   bool _isLoading = true;
 
   void _refreshContactList() async {
@@ -39,12 +38,14 @@ class _ContactListPageState extends State<ContactListPage> {
   void initState() {
     super.initState();
     _refreshContactList();
-    // print("..number of items: ${_contactList.length}"); // debug statement to check the number of items in the list
+    debugPrint(
+        "Number of items: ${_contactList.length}"); // Check the number of items in the list at the start
   }
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   Uint8List _photo = Uint8List(0);
 
   Future<void> _addContact() async {
@@ -52,15 +53,22 @@ class _ContactListPageState extends State<ContactListPage> {
       _nameController.text,
       _phoneController.text,
       _emailController.text,
+      _addressController.text,
       base64Encode(_photo),
     );
     _refreshContactList();
-    // print("..number of items: ${_contactList.length}"); // debug statement to check the number of items in the list
+    debugPrint(
+        "Number of items: ${_contactList.length}"); // check  whether the number of items in the list are updated
   }
 
   Future<void> _updateContact(int id) async {
-    await SQLHelper.updateContact(id, _nameController.text,
-        _phoneController.text, _emailController.text, base64Encode(_photo));
+    await SQLHelper.updateContact(
+        id,
+        _nameController.text,
+        _phoneController.text,
+        _emailController.text,
+        _addressController.text,
+        base64Encode(_photo));
     _refreshContactList();
   }
 
@@ -86,25 +94,27 @@ class _ContactListPageState extends State<ContactListPage> {
       _nameController.text = existingContactList['name'];
       _phoneController.text = existingContactList['phone'];
       _emailController.text = existingContactList['email'];
+      _addressController.text = existingContactList['address'];
       _photo = base64Decode(existingContactList['photo']);
     } else {
       _nameController.text = '';
       _phoneController.text = '';
       _emailController.text = '';
+      _addressController.text = '';
       _photo = Uint8List(0);
     }
 
-    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) {
       return Scaffold(
         appBar: AppBar(
           title: Text(id == null ? 'Create New Contact' : 'Update Contact'),
         ),
-        body: Container(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(15),
           child: Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -165,9 +175,20 @@ class _ContactListPageState extends State<ContactListPage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(hintText: 'Address'),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      return null;
+                    }
+                    return null;
+                  },
+                ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
+                    if (formKey.currentState!.validate()) {
                       if (id == null) {
                         await _addContact();
                       }
@@ -178,7 +199,9 @@ class _ContactListPageState extends State<ContactListPage> {
                       _nameController.text = '';
                       _phoneController.text = '';
                       _emailController.text = '';
+                      _addressController.text = '';
                       // close
+                      // ignore: use_build_context_synchronously
                       Navigator.of(context).pop();
                     }
                   },
@@ -218,7 +241,7 @@ class _ContactListPageState extends State<ContactListPage> {
                 // function to call the contact can be implemented here,
                 // but it is not in the assignment scope So I have left as a SnackBar for now
               } catch (e) {
-                print('Error showing snackbar: $e');
+                debugPrint('Error showing snackbar: $e');
               }
             },
             leading: SizedBox(
@@ -245,9 +268,9 @@ class _ContactListPageState extends State<ContactListPage> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: const Text('Confirm Deletion'),
+                        title: const Text('Delete This Contact?'),
                         content: const Text(
-                            'Are you sure you want to delete this contact?'),
+                            'This will delete the contact from your device.'),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () {

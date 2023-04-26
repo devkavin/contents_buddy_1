@@ -14,6 +14,7 @@ class SQLHelper {
         name TEXT,
         phone TEXT,
         email TEXT,
+        address TEXT,
         photo TEXT
       )
       """);
@@ -24,18 +25,25 @@ class SQLHelper {
       'contents_buddy.db',
       version: 1,
       onCreate: (sql.Database database, int version) async {
-        // print("...Creating a table"); // Print statement to check if the table is created
+        debugPrint(
+            "Creating a table.."); // Print statement to check if the table is created
         await createTables(database);
       },
     );
   }
 
-  static Future<int> createContact(
-      String name, String phone, String email, String photo) async {
+  static Future<int> createContact(String name, String phone, String email,
+      String address, String photo) async {
     final db = await SQLHelper.db();
 
     // map the data to be inserted
-    final data = {'name': name, 'phone': phone, 'email': email, 'photo': photo};
+    final data = {
+      'name': name.trim(),
+      'phone': phone.trim(),
+      'email': email.trim(),
+      'address': address.trim(),
+      'photo': photo
+    };
     final id = await db.insert('contacts', data,
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return id;
@@ -51,12 +59,18 @@ class SQLHelper {
     return db.query('contacts', where: "id = ?", whereArgs: [id], limit: 1);
   }
 
-  static Future<int> updateContact(
-      int id, String name, String phone, String email, String photo) async {
+  static Future<int> updateContact(int id, String name, String phone,
+      String email, String address, String photo) async {
     final db = await SQLHelper.db();
 
     // map the data to be updated
-    final data = {'name': name, 'phone': phone, 'email': email, 'photo': photo};
+    final data = {
+      'name': name.trim(),
+      'phone': phone.trim(),
+      'email': email.trim(),
+      'address': address.trim(),
+      'photo': photo
+    };
 
     final result =
         await db.update('contacts', data, where: "id = ?", whereArgs: [id]);
@@ -86,7 +100,8 @@ class SQLHelper {
 
   static String encodePhoto(String path) {
     final String base64Image = imageToBase64String(path);
-    // print('Imaged Encoded');
+    debugPrint(
+        'Imaged Encoded'); // Print statement to check if the image is encoded
     return base64Image;
   }
 
@@ -95,7 +110,8 @@ class SQLHelper {
     final String base64Str = base64Image.replaceAll(regex, '');
     final Uint8List bytes = base64.decode(base64Str);
     final file = File(fileName)..writeAsBytesSync(bytes);
-    // print('Image Decoded');
+    debugPrint(
+        'Image Decoded'); // Print statement to check if the image is decoded
     return file;
   }
 }
