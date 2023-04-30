@@ -78,6 +78,14 @@ class _ContactListPageState extends State<ContactListPage> {
     _refreshContactList();
   }
 
+  // search contact by name or phone
+  // Future<void> _searchContact(String keyword) async {
+  //   final data = await SQLHelper.searchContacts(keyword);
+  //   setState(() {
+  //     _contactList = data;
+  //   });
+  // }
+
   void showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -224,9 +232,17 @@ class _ContactListPageState extends State<ContactListPage> {
         title: Text('Contacts: ${_contactList.length}'),
         // addbutton
         actions: [
-          IconButton(
-            onPressed: () => _showForm(null),
-            icon: const Icon(Icons.add),
+          Row(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => _showForm(null),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

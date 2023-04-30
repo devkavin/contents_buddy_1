@@ -59,6 +59,15 @@ class SQLHelper {
     return db.query('contacts', where: "id = ?", whereArgs: [id], limit: 1);
   }
 
+  // search contact by name or phone
+  static Future<List<Map<String, dynamic>>> searchContacts(
+      String keyword) async {
+    final db = await SQLHelper.db();
+    return db.query('contacts',
+        where: "name LIKE ? OR phone LIKE ?",
+        whereArgs: ['%$keyword%', '%$keyword%']);
+  }
+
   static Future<int> updateContact(int id, String name, String phone,
       String email, String address, String photo) async {
     final db = await SQLHelper.db();
