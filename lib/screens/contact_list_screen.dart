@@ -39,7 +39,7 @@ class _ContactListPageState extends State<ContactListPage> {
     super.initState();
     _refreshContactList();
     debugPrint(
-        "Number of items: ${_contactList.length}"); // Check the number of items in the list at the start
+        "Number of items at start: ${_contactList.length}"); // Check the number of items in the list at the start
   }
 
   final TextEditingController _nameController = TextEditingController();
@@ -58,7 +58,7 @@ class _ContactListPageState extends State<ContactListPage> {
     );
     _refreshContactList();
     debugPrint(
-        "Number of items: ${_contactList.length}"); // check  whether the number of items in the list are updated
+        "Number of items after adding contact: ${_contactList.length}"); // check  whether the number of items in the list are updated
   }
 
   Future<void> _updateContact(int id) async {
@@ -79,12 +79,12 @@ class _ContactListPageState extends State<ContactListPage> {
   }
 
   // search contact by name or phone
-  // Future<void> _searchContact(String keyword) async {
-  //   final data = await SQLHelper.searchContacts(keyword);
-  //   setState(() {
-  //     _contactList = data;
-  //   });
-  // }
+  Future<void> _searchContact(String keyword) async {
+    final data = await SQLHelper.searchContacts(keyword);
+    setState(() {
+      _contactList = data;
+    });
+  }
 
   void showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -146,10 +146,14 @@ class _ContactListPageState extends State<ContactListPage> {
                     }
                   },
                 ),
+                const Divider(),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(hintText: 'Name'),
+                  decoration: const InputDecoration(
+                      hintText: 'Name',
+                      border: OutlineInputBorder(),
+                      icon: Icon(Icons.person)),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a name';
@@ -160,7 +164,10 @@ class _ContactListPageState extends State<ContactListPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: const InputDecoration(hintText: 'Phone'),
+                  decoration: const InputDecoration(
+                      hintText: 'Phone',
+                      border: OutlineInputBorder(),
+                      icon: Icon(Icons.phone)),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a phone number';
@@ -171,7 +178,10 @@ class _ContactListPageState extends State<ContactListPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(hintText: 'Email'),
+                  decoration: const InputDecoration(
+                      hintText: 'Email',
+                      border: OutlineInputBorder(),
+                      icon: Icon(Icons.email)),
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {
                       final emailRegex = RegExp(
@@ -186,7 +196,10 @@ class _ContactListPageState extends State<ContactListPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _addressController,
-                  decoration: const InputDecoration(hintText: 'Address'),
+                  decoration: const InputDecoration(
+                      hintText: 'Address',
+                      border: OutlineInputBorder(),
+                      icon: Icon(Icons.home)),
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {
                       return null;
@@ -194,6 +207,7 @@ class _ContactListPageState extends State<ContactListPage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
@@ -234,83 +248,86 @@ class _ContactListPageState extends State<ContactListPage> {
         actions: [
           Row(
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => _showForm(null),
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
+              IconButton(
+                onPressed: () => _showForm(null),
+                icon: const Icon(Icons.add),
               ),
+              // search button
             ],
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _contactList.length,
-        itemBuilder: (context, index) => Card(
-          margin: const EdgeInsets.all(5),
-          child: ListTile(
-            onTap: () {
-              try {
-                showSnackBar('Tile $index Tapped');
-                // function to call the contact can be implemented here,
-                // but it is not in the assignment scope So I have left as a SnackBar for now
-              } catch (e) {
-                debugPrint('Error showing snackbar: $e');
-              }
-            },
-            leading: SizedBox(
-              width: 50,
-              height: 50,
-              child: CircleAvatar(
-                backgroundImage: _contactList[index]['photo'].isNotEmpty
-                    ? MemoryImage(base64Decode(_contactList[index]['photo']))
-                    : const AssetImage('assets/images/default_contact.png')
-                        as ImageProvider,
+      body: Column(
+        children: [
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: _contactList.length,
+            itemBuilder: (context, index) => Card(
+              margin: const EdgeInsets.all(5),
+              child: ListTile(
+                onTap: () {
+                  try {
+                    showSnackBar('Tile $index Tapped');
+                    // function to call the contact can be implemented here,
+                    // but it is not in the assignment scope So I have left as a SnackBar for now
+                  } catch (e) {
+                    debugPrint('Error showing snackbar: $e');
+                  }
+                },
+                leading: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircleAvatar(
+                    backgroundImage: _contactList[index]['photo'].isNotEmpty
+                        ? MemoryImage(
+                            base64Decode(_contactList[index]['photo']))
+                        : const AssetImage('assets/images/default_contact.png')
+                            as ImageProvider,
+                  ),
+                ),
+                title: Text(_contactList[index]['name']),
+                subtitle: Text(_contactList[index]['phone']),
+                trailing: SizedBox(
+                  width: 100,
+                  child: Row(children: [
+                    IconButton(
+                      onPressed: () => _showForm(_contactList[index]['id']),
+                      icon: const Icon(Icons.edit),
+                    ),
+                    IconButton(
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Delete This Contact?'),
+                            content: const Text(
+                                'This will delete the contact from your device.'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _deleteContact(_contactList[index]['id']);
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ]),
+                ),
               ),
             ),
-            title: Text(_contactList[index]['name']),
-            subtitle: Text(_contactList[index]['phone']),
-            trailing: SizedBox(
-              width: 100,
-              child: Row(children: [
-                IconButton(
-                  onPressed: () => _showForm(_contactList[index]['id']),
-                  icon: const Icon(Icons.edit),
-                ),
-                IconButton(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Delete This Contact?'),
-                        content: const Text(
-                            'This will delete the contact from your device.'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _deleteContact(_contactList[index]['id']);
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Delete'),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  icon: const Icon(Icons.delete),
-                ),
-              ]),
-            ),
           ),
-        ),
+        ],
       ),
     );
   }
