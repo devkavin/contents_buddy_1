@@ -141,6 +141,7 @@ class _ContactListPageState extends State<ContactListPage> {
 
                     if (pickedFile != null) {
                       setState(() {
+                        // update the profile photo
                         _photo = File(pickedFile.path).readAsBytesSync();
                       });
                     }
