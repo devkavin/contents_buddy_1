@@ -1,6 +1,8 @@
 # contents_buddy_1
 
-A new Flutter project.
+A new Flutter project for MAD coursework.
+
+## UI Screenshots (coming soon)
 
 ## Getting Started
 
